@@ -1,4 +1,4 @@
-name: Maven CI Build
+name: Maven CI Build with Docker Push
 
 on:
   push:
@@ -23,18 +23,23 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Step 3: Validate
-      - name: Maven Validate
-        run: mvn validate --batch-mode
+      # Step 3: Build and Test with Maven
+      - name: Build and Test
+        run: mvn clean package --batch-mode
 
-      # Step 4: Compile
-      - name: Maven Compile
-        run: mvn compile --batch-mode
+      # Step 4: Log in to Docker Hub
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Step 5: Run tests
-      - name: Maven Test
-        run: mvn test --batch-mode
-
-      # Optional: Package the build
-      - name: Maven Package
-        run: mvn package --batch-mode
+      # Step 5: Build and Push Docker image
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/mavenapp:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mavenapp:${{ github.sha }}
