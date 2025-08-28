@@ -1,0 +1,40 @@
+name: Maven CI Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Step 3: Validate
+      - name: Maven Validate
+        run: mvn validate --batch-mode
+
+      # Step 4: Compile
+      - name: Maven Compile
+        run: mvn compile --batch-mode
+
+      # Step 5: Run tests
+      - name: Maven Test
+        run: mvn test --batch-mode
+
+      # Optional: Package the build
+      - name: Maven Package
+        run: mvn package --batch-mode
